@@ -1,4 +1,6 @@
 import os
+from PIL import Image
+import pytesseract
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -10,6 +12,8 @@ from dotenv import load_dotenv
 
 # .env dosyasını yükle
 load_dotenv()
+
+pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
 
 chromedriver_path = "/Users/ali/Desktop/PYTHON/spor_istanbul_rezervasyon_botu/chromedriver"
 
@@ -94,9 +98,23 @@ WebDriverWait(driver, 20).until(
 )
 
 # Captcha'yı çöz
+captcha_image = driver.find_element(By.ID, "pageContent_captchaImage")
+captcha_image.screenshot("captcha.png")
 
+# Ekran görüntüsünün alınıp alınmadığını kontrol edin
+if os.path.exists("captcha.png"):
+    print("Ekran görüntüsü başarıyla alındı.")
+else:
+    print("Ekran görüntüsü alınamadı.")
 
+# Tesseract OCR kullanarak metni çıkarın
+captcha_text = pytesseract.image_to_string(Image.open("captcha.png"))
 
+# Çıkarılan metni yazdırarak kontrol edin
+print("Captcha metni:", captcha_text)
+
+captcha_input = driver.find_element(By.ID, "pageContent_txtCaptchaText")
+captcha_input.send_keys(captcha_text)
 
 # Kaydet butonuna tıkla 
 # kaydet = driver.find_element(By.ID, "lbtnKaydet")
